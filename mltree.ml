@@ -482,9 +482,9 @@ let boot_dump  base_dir ~options =
   let base_dir = strip_slash base_dir in
   let all_size = dump_dir ~name:base_dir ~stats ~depth:0 ~last:[] ~options in
   if options.colors then
-    Printf.printf "\n%s\n" (color `green ~label:"Total size: " (human_size all_size) ())
+    Printf.printf "\n%s\n" (color `green ~label:"Total size: " (human_size ~size:all_size) ())
   else
-    Printf.printf "\nTotal size: %s\n" (human_size all_size);
+    Printf.printf "\nTotal size: %s\n" (human_size ~size:all_size);
 ;;
 
 (* {{{ set options *)
