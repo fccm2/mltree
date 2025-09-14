@@ -1,5 +1,5 @@
-mltree is freesoftware released under the Zlib license,
-see the file LICENSE.txt for details.
+mltree is free-software released under any license, desc-
+-ribed, in the file LICENSE.txt, see this file for details.
 
 mltree is similar to the unix command line utility 'tree'.
 The main difference is that currently tree dumps all the
