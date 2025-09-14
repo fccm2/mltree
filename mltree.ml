@@ -33,6 +33,7 @@ type options = {
   mt: bool;
   at: bool;
   ct: bool;
+  digest: bool;
 }
 
 let concat = Filename.concat ;;
@@ -52,6 +53,9 @@ let usage () =
 
   display with colors:
     -c  --colors
+
+  digest:
+    -d  --digest
 ";
   exit 1;
 ;;
@@ -305,6 +309,14 @@ let dump_file ~name:(file_name) ~stats ~depth ~last ~options =
   let h_size = human_size ~size in
   let pad = padding ~last ~depth in
 
+  let digest =
+    let file_path = String.trim file_name in
+    (Digest.to_hex (Digest.file file_path))
+  in
+  let digest =
+    (String.sub digest 0 (32))
+  in
+
   if options.colors then begin
     Printf.printf "%s" (color `yellow (pad ^ (branch_mark ~last)) ());
     Printf.printf " %s" (color `purple ~label:"-" (human_perms ~perms) ());
@@ -316,6 +328,8 @@ let dump_file ~name:(file_name) ~stats ~depth ~last ~options =
       if options.ct then Printf.printf "  %s" (color `dark_grey ~label:"ct:" (human_time ctime) ());
       if options.at then Printf.printf "  %s" (color `dark_grey ~label:"at:" (human_time atime) ());
     end;
+    if options.digest then
+      Printf.printf " %s" (color `dark_red ~label:"d:" (digest) ());
   end else begin
     Printf.printf "%s" (pad ^ (branch_mark ~last));
     Printf.printf " -%s" (human_perms ~perms);
@@ -327,6 +341,8 @@ let dump_file ~name:(file_name) ~stats ~depth ~last ~options =
       if options.ct then Printf.printf "  %s" ("ct:" ^ (human_time ctime));
       if options.at then Printf.printf "  %s" ("at:" ^ (human_time atime));
     end;
+    if options.digest then
+      Printf.printf " %s" ("d:" ^ digest);
   end;
   Printf.printf "\n";
   (size)
@@ -515,12 +531,16 @@ let options_set_hide ~options =
   { options with
     hide = true }
 
+let options_set_digest ~options =
+  { options with
+    digest = true }
+
 (* }}} *)
 
 let () =
   let argc = Array.length Sys.argv
   and blank_options =
-    { colors=false; hide=false; mt=false; at=false; ct=false }
+    { colors=false; hide=false; mt=false; at=false; ct=false; digest=false }
   in
 
   let this_dir d yet options =
@@ -533,6 +553,7 @@ let () =
       | "-ct" | "-ctime" | "--status-change-time" -> (yet, options_set_ct ~options)
       | "-t" | "-times" | "--all-times" -> (yet, options_set_times ~options)
       | "-c" | "--colors" -> (yet, options_set_colors ~options)
+      | "-d" | "--digest" -> (yet, options_set_digest ~options)
       | "-l" -> (yet, options_set_hide ~options)
       | "--" -> (yet, blank_options)
       | "-h" | "--help" -> usage();
