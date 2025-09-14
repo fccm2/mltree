@@ -1,20 +1,15 @@
 #!/usr/bin/env ocaml
 (* +--------------------------------------------------------------------+
- * | Copyright (C) 2005 2006 Florent Monnier                            |
- * +--------------------------------------------------------------------+
  * | This is a small implementation of the 'tree' command-line utility. |
  * +--------------------------------------------------------------------+
- * |                                                                    |
- * | Permission is granted to anyone to use this software for any       |
- * | purpose, including commercial applications, and to alter it and    |
- * | redistribute it freely.                                            |
- * |                                                                    |
- * | This software is provided "AS-IS", without any express or implied  |
- * | warranty.  In no event will the authors be held liable for any     |
- * | damages arising from the use of this software.                     |
+ * | Author(s): 2005 2006 2025 Florent Monnier                          |
+ * +--------------------------------------------------------------------+
+ * | To the extent permitted by law, you can use, study, modify, re-    |
+ * | distribute, and re-license, this package, to any spdx license, or  |
+ * | any license approuved by the fsf.                                  |
  * |                                                                    |
  * +--------------------------------------------------------------------+
- * | Author: Florent Monnier  <monnier.florent@gmail.com>               |
+ * | Contact: Florent Monnier, see file: contact.ml                     |
  * +--------------------------------------------------------------------+
  *)
 (* Bugs & comments
