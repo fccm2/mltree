@@ -324,7 +324,7 @@ let dump_file ~name:(file_name) ~stats ~depth ~last ~options =
       if options.at then Printf.printf "  %s" (color `dark_grey ~label:"at:" (human_time atime) ());
     end;
     if options.digest then
-      Printf.printf " %s" (color `dark_red ~label:"d:" (digest) ());
+      Printf.printf " %s" (color `green ~label:"d:" (digest) ());
   end else begin
     Printf.printf "%s" (pad ^ (branch_mark ~last));
     Printf.printf " -%s" (human_perms ~perms);
