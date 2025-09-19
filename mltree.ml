@@ -52,6 +52,9 @@ let usage () =
 
   digest:
     -d  --digest
+
+  usage:
+    -h  --help
 ";
   exit 1;
 ;;
