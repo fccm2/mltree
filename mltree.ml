@@ -54,6 +54,9 @@ let usage () =
   digest:
     -d  --digest
 
+  html:
+    -m  --html
+
   usage:
     -h  --help
 ";
