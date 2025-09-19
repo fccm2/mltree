@@ -30,6 +30,7 @@ type options = {
   at: bool;
   ct: bool;
   digest: bool;
+  htm: bool;
 }
 
 let concat = Filename.concat ;;
@@ -192,6 +193,13 @@ let branch_dir_mark ~last =
 ;;
 (* }}} *)
 (* {{{ color *)
+
+type color_name =
+  [ `blue | `blue_dir | `cyan | `dark_grey | `dark_red | `default | `green
+  | `light_cyan | `magenta | `purple | `red | `test | `white | `yellow ]
+
+type color_func = color_name -> ?label:string -> string -> unit -> string
+
 (*    red  [31;49m Normal [0m
     green  [32;49m Normal [0m
    yellow  [33;49m Normal [0m
@@ -201,7 +209,7 @@ let branch_dir_mark ~last =
     white  [37;49m Normal [0m
   default  [39;49m Normal [0m
 *)
-let color color_name ?(label="") str () =
+let color_esc color_name ?(label="") str () =
   let col_code = match color_name with
   | `blue_dir  -> "01;34"
   (*
@@ -223,6 +231,30 @@ let color color_name ?(label="") str () =
   | `default -> "39;49"
   in
   Printf.sprintf "\027[%sm%s%s\027[00m" col_code  label str
+;;
+
+let color_htm color_name ?(label="") str () =
+  let col_code = match color_name with
+  | `blue_dir  -> "#026"
+  (*
+  | `yellow    -> "01;33"
+  *)
+  | `dark_red  -> "#942"
+  | `purple    -> "#606"
+  | `dark_grey -> "#666"
+  | `test      -> "#00F"
+  | `light_cyan -> "#26D"
+
+  |     `red -> "#800"
+  |   `green -> "#080"
+  |  `yellow -> "#CC0"
+  |    `blue -> "#00D"
+  | `magenta -> "#D02"
+  |    `cyan -> "#20D"
+  |   `white -> "#EEE"
+  | `default -> "#222"
+  in
+  Printf.sprintf "<span style='color:%s;'>%s%s</span>" col_code  label str
 ;;
 (* }}} *)
 (* {{{ human_perms *)
@@ -251,6 +283,7 @@ let human_perms ~perms =
 (* {{{ dump_total_size *)
 
 let dump_total_size ~size ~depth ~last ~options =
+  let color = if options.htm then color_htm else color_esc in
   if size = 0L then () else begin
     let pad = padding ~last:(true::last) ~depth in
     let h_size = human_size ~size in
@@ -282,6 +315,7 @@ let human_time time =
 (* {{{ dump_link *)
 
 let dump_link link link_path ~depth ~last ~options =
+  let color = if options.htm then color_htm else color_esc in
   let pad = padding ~last ~depth in
   let dst = Unix.readlink link_path in
   if options.colors then begin
@@ -315,12 +349,15 @@ let dump_file ~name:(file_name) ~stats ~depth ~last ~options =
   let digest =
     (String.sub digest 0 (32))
   in
+  let color =
+    if options.htm then color_htm else color_esc
+  in
 
   if options.colors then begin
-    Printf.printf "%s" (color `yellow (pad ^ (branch_mark ~last)) ());
+    Printf.printf "%s" (color `yellow ~label:"" (pad ^ (branch_mark ~last)) ());
     Printf.printf " %s" (color `purple ~label:"-" (human_perms ~perms) ());
   (*Printf.printf "%s " (color `purple ~label:"perms:" (Printf.sprintf "%03o" perms) ()); (* Octal *) *)
-    Printf.printf " %s"  (color `dark_red h_size ());
+    Printf.printf " %s"  (color `dark_red ~label:"" h_size ());
     Printf.printf " %s" (Filename.basename file_name);
     begin
       if options.mt then Printf.printf "  %s" (color `dark_grey ~label:"mt:" (human_time mtime) ());
@@ -350,7 +387,7 @@ let dump_file ~name:(file_name) ~stats ~depth ~last ~options =
 (* }}} *)
 (* {{{ dump_file_list *)
 
-let dump_file_list  ~files ~links ~dirs ~parent_dir ~depth ~last ~options =
+let dump_file_list ~files ~links ~dirs ~parent_dir ~depth ~last ~options =
 
   let rec file_loop ~files ~links ~dirs size_acc =
     match files, links, dirs with
@@ -389,6 +426,9 @@ let dump_file_list  ~files ~links ~dirs ~parent_dir ~depth ~last ~options =
 let rec dump_dir ~name ~stats ~depth ~last ~options =
   let parent_dir = name
   (* and parent_dir_stats = stats *)
+  in
+  let color =
+    if options.htm then color_htm else color_esc
   in
 
   let pad = padding ~last ~depth:(pred depth) in
@@ -493,6 +533,7 @@ let strip_slash name =
 ;;
 
 let boot_dump  base_dir ~options =
+  let color = if options.htm then color_htm else color_esc in
   let stats = Unix.LargeFile.lstat base_dir in
   let base_dir = strip_slash base_dir in
   let all_size = dump_dir ~name:base_dir ~stats ~depth:0 ~last:[] ~options in
@@ -534,13 +575,26 @@ let options_set_digest ~options =
   { options with
     digest = true }
 
+let options_set_html ~options =
+  { options with
+    htm = true }
+
 (* }}} *)
 
 let () =
   let argc = Array.length Sys.argv
   and blank_options =
-    { colors=false; hide=false; mt=false; at=false; ct=false; digest=false }
+    { colors=false; hide=false; mt=false; at=false; ct=false; digest=false;
+      htm=false }
   in
+  let argl = List.tl (Array.to_list Sys.argv) in
+  if List.mem "--html" argl
+  || List.mem "-m" argl
+  then begin
+    Printf.printf "<html>\n";
+    Printf.printf "<body>\n";
+    Printf.printf "<pre>\n";
+  end;
 
   let this_dir d yet options =
     if Sys.file_exists d
@@ -553,6 +607,7 @@ let () =
       | "-ts" | "-times" | "--all-times" -> (yet, options_set_times ~options)
       | "-c" | "--colors" -> (yet, options_set_colors ~options)
       | "-d" | "--digest" -> (yet, options_set_digest ~options)
+      | "-m" | "--html" -> (yet, options_set_html ~options)
       | "-l" -> (yet, options_set_hide ~options)
       | "--" -> (yet, blank_options)
       | "-h" | "--help" -> usage();
@@ -568,6 +623,15 @@ let () =
       ignore(this_dir "." 0 options) (* Sys.getcwd () *)
   in
   parse_arg 1 0 blank_options;
+  
+  let argl = List.tl (Array.to_list Sys.argv) in
+  if List.mem "--html" argl
+  || List.mem "-m" argl
+  then begin
+    Printf.printf "</pre>\n";
+    Printf.printf "</body>\n";
+    Printf.printf "</html>\n";
+  end;
 ;;
 
 (* }}} *)
