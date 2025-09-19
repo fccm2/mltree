@@ -20,6 +20,7 @@
  *)
 (* {{{ utils/types/inits *)
 
+#directory "+unix"
 #load "unix.cma"
 
 type options = {
