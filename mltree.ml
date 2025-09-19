@@ -45,7 +45,7 @@ let usage () =
     -mt  -mtime  --modification-time
     -at  -atime  --last-access-time
     -ct  -ctime  --status-change-time
-    -t   -times  --all-times
+    -ts  -times  --all-times
 
   display with colors:
     -c  --colors
@@ -547,7 +547,7 @@ let () =
       | "-mt" | "-mtime" | "--modification-time"  -> (yet, options_set_mt ~options)
       | "-at" | "-atime" | "--last-access-time"   -> (yet, options_set_at ~options)
       | "-ct" | "-ctime" | "--status-change-time" -> (yet, options_set_ct ~options)
-      | "-t" | "-times" | "--all-times" -> (yet, options_set_times ~options)
+      | "-ts" | "-times" | "--all-times" -> (yet, options_set_times ~options)
       | "-c" | "--colors" -> (yet, options_set_colors ~options)
       | "-d" | "--digest" -> (yet, options_set_digest ~options)
       | "-l" -> (yet, options_set_hide ~options)
